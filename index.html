@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>World's Hardest Game</title>
+	<style>
+		* { padding: 0; margin: 0; }
+		canvas { background: #eee; display: block; margin: 0 auto; }
+	</style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+//<canvas id="myCanvas" width="960" height="640"></canvas>
+	var LEFT_ARROW_KEY_CODE = 37;
+	var DOWN_ARROW_KEY_CODE = 38;
+	var RIGHT_ARROW_KEY_CODE = 39;
+	var UP_ARROW_KEY_CODE = 40;
+	var canvas = document.getElementById("myCanvas");
+	//canvas.width = window.innerWidth;
+	//canvas.height = window.innerHeight;
+	var ctx = canvas.getContext("2d");
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	var squareX = canvas.width/2;
+	var squareY = canvas.height/2;
+	var squareSide = 15;
+	var squareSpeed = 3;
+	var leftPressed = false;
+	var downPressed = false;
+	var rightPressed = false;
+	var upPressed = false;
+	function draw() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//ctx.fillStyle = "#000000";
+		//ctx.fillRect(0,0,canvas.width,canvas.height);
+		ctx.beginPath();
+		ctx.rect(squareX, squareY, squareSide, squareSide);
+		ctx.fillStyle = "#0095DD";
+		ctx.fill();
+		ctx.closePath();
+		if (leftPressed && squareX > 0 ) {
+			squareX -= squareSpeed;
+		}
+		if (downPressed && squareY > 0) {
+			squareY -= squareSpeed;
+		}
+		if (rightPressed && squareX + squareSide < canvas.width) {
+			squareX += squareSpeed;
+		}
+		if (upPressed && squareY + squareSide < canvas.height) {
+			squareY += squareSpeed;
+		}
+		requestAnimationFrame(draw);
+	}
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+	function keyDownHandler(e) {
+		if (e.keyCode == LEFT_ARROW_KEY_CODE) {
+			leftPressed = true;
+		} else if (e.keyCode == DOWN_ARROW_KEY_CODE) {
+			downPressed = true;
+		} else if (e.keyCode == RIGHT_ARROW_KEY_CODE) {
+			rightPressed = true;
+		} else if (e.keyCode == UP_ARROW_KEY_CODE) {
+			upPressed = true;
+		}
+	}
+	function keyUpHandler(e) {
+		if (e.keyCode == LEFT_ARROW_KEY_CODE) {
+			leftPressed = false;
+		} else if (e.keyCode == DOWN_ARROW_KEY_CODE) {
+			downPressed = false;
+		} else if (e.keyCode == RIGHT_ARROW_KEY_CODE) {
+			rightPressed = false;
+		} else if (e.keyCode == UP_ARROW_KEY_CODE) {
+			upPressed = false;
+		}
+	}
+	draw();
+</script>
+
+</body>
+</html>
