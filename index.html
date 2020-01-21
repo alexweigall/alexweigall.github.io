@@ -1,85 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8" />
-	<title>World's Hardest Game</title>
-	<style>
-		* { padding: 0; margin: 0; }
-		canvas { background: #eee; display: block; margin: 0 auto; }
-	</style>
+    <meta charset="utf-8" />
+    <title>Gamedev Phaser Workshop - lesson 01: Initialize the framework</title>
+    <style>* { padding: 0; margin: 0; }</style>
+    <script src="js/phaser.min.js"></script>
 </head>
 <body>
-
-<canvas id="myCanvas" width="480" height="320"></canvas>
-
 <script>
-//<canvas id="myCanvas" width="960" height="640"></canvas>
-	var LEFT_ARROW_KEY_CODE = 37;
-	var DOWN_ARROW_KEY_CODE = 38;
-	var RIGHT_ARROW_KEY_CODE = 39;
-	var UP_ARROW_KEY_CODE = 40;
-	var canvas = document.getElementById("myCanvas");
-	//canvas.width = window.innerWidth;
-	//canvas.height = window.innerHeight;
-	var ctx = canvas.getContext("2d");
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	var squareX = canvas.width/2;
-	var squareY = canvas.height/2;
-	var squareSide = 15;
-	var squareSpeed = 3;
-	var leftPressed = false;
-	var downPressed = false;
-	var rightPressed = false;
-	var upPressed = false;
-	function draw() {
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		//ctx.fillStyle = "#000000";
-		//ctx.fillRect(0,0,canvas.width,canvas.height);
-		ctx.beginPath();
-		ctx.rect(squareX, squareY, squareSide, squareSide);
-		ctx.fillStyle = "#0095DD";
-		ctx.fill();
-		ctx.closePath();
-		if (leftPressed && squareX > 0 ) {
-			squareX -= squareSpeed;
-		}
-		if (downPressed && squareY > 0) {
-			squareY -= squareSpeed;
-		}
-		if (rightPressed && squareX + squareSide < canvas.width) {
-			squareX += squareSpeed;
-		}
-		if (upPressed && squareY + squareSide < canvas.height) {
-			squareY += squareSpeed;
-		}
-		requestAnimationFrame(draw);
-	}
-	document.addEventListener("keydown", keyDownHandler, false);
-	document.addEventListener("keyup", keyUpHandler, false);
-	function keyDownHandler(e) {
-		if (e.keyCode == LEFT_ARROW_KEY_CODE) {
-			leftPressed = true;
-		} else if (e.keyCode == DOWN_ARROW_KEY_CODE) {
-			downPressed = true;
-		} else if (e.keyCode == RIGHT_ARROW_KEY_CODE) {
-			rightPressed = true;
-		} else if (e.keyCode == UP_ARROW_KEY_CODE) {
-			upPressed = true;
-		}
-	}
-	function keyUpHandler(e) {
-		if (e.keyCode == LEFT_ARROW_KEY_CODE) {
-			leftPressed = false;
-		} else if (e.keyCode == DOWN_ARROW_KEY_CODE) {
-			downPressed = false;
-		} else if (e.keyCode == RIGHT_ARROW_KEY_CODE) {
-			rightPressed = false;
-		} else if (e.keyCode == UP_ARROW_KEY_CODE) {
-			upPressed = false;
-		}
-	}
-	draw();
+  var square;
+  var circles;
+  var leftKey;
+  var rightKey;
+  var upKey;
+  var downKey;
+  var gameTimer;
+  var tick;
+  var startTime;
+  var game = new Phaser.Game(480, 320, Phaser.CANVAS, null, {
+    preload: preload, create: create, update: update
+  });
+  function preload() {
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.scale.pageAlignHorizontally = true;
+    game.scale.pageAlignVertically = true;
+    game.stage.backgroundColor = '#eee';
+    game.load.image('square', 'img/square.png');
+    game.load.image('circle', 'img/ball.png');
+  }
+  function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    square = game.add.sprite(game.world.width*0.5, game.world.height*0.5, 'square');
+    game.physics.enable(square, Phaser.Physics.ARCADE);
+    square.body.collideWorldBounds = true;
+    circles = game.add.group();
+    this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+    this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    tick = game.time.now;
+    textStyle = { font: '18px Arial', fill: '#0095DD' };
+    gameTimer = game.add.text(5, 5, '00:00:00', textStyle);
+    startTime = game.time.time;
+  }
+  function update() {
+    square.body.velocity.x = 0;
+    square.body.velocity.y = 0;
+    game.physics.arcade.collide(square, circles, squareHitCircle);
+    if (this.leftKey.isDown) {
+      square.body.velocity.x = -200;
+    }
+    if (this.rightKey.isDown) {
+      square.body.velocity.x = 200;
+    }
+    if (this.upKey.isDown) {
+      square.body.velocity.y = -200;
+    }
+    if (this.downKey.isDown) {
+      square.body.velocity.y = 200;
+    }
+    if (game.time.now - tick > 1000) {
+      addNewCircle();
+      tick = game.time.now;
+    }
+    updateTimer();
+  }
+  function addNewCircle() {
+    var circleX = game.world.width*Math.random();
+    var circleY = game.world.height*Math.random();
+    var newCircle = game.add.sprite(circleX, circleY, 'circle');
+    game.physics.enable(newCircle, Phaser.Physics.ARCADE);
+    newCircle.body.collideWorldBounds = true;
+    newCircle.body.bounce.set(1);
+    newCircle.body.velocity.x = 200*Math.random();
+    newCircle.body.velocity.y = 200*Math.random();
+    circles.add(newCircle);
+  }
+  function squareHitCircle(square, circle) {
+    alert('You lost, game over!');
+    location.reload();
+  }
+  function updateTimer() {
+    var currentTime = game.time.time;
+    var timeElapsed = currentTime - startTime;
+    minutesElapsed = Math.floor(timeElapsed / 60000) % 60;
+    secondsElapsed = Math.floor(timeElapsed / 1000) % 60;
+    millisecondsElapsed = Math.floor(timeElapsed) % 100; //If any of the digits becomes a single digit number, pad it with a zero    
+    if (millisecondsElapsed < 10) millisecondsElapsed = '0' + millisecondsElapsed;
+    if (secondsElapsed < 10) secondsElapsed = '0' + secondsElapsed;
+    if (minutesElapsed < 10) minutesElapsed = '0' + minutesElapsed;
+    gameTimer.setText(minutesElapsed + ':'+ secondsElapsed + ':' + millisecondsElapsed);
+  }
 </script>
-
 </body>
 </html>
